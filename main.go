@@ -4,12 +4,26 @@ import (
 	"io/ioutil"
 	"path"
 
+	"github.com/gdamore/tcell"
 	"github.com/rivo/tview"
 )
 
 var booklibrary_path string = "./lib"
 var booklist_view *tview.List
 var chapterlist_view *tview.List
+var app *tview.Application
+
+func navigationHandler(event *tcell.EventKey) *tcell.EventKey {
+	switch event.Key() {
+	case tcell.KeyRight:
+		app.SetFocus(chapterlist_view)
+		return nil
+	case tcell.KeyLeft:
+		app.SetFocus(booklist_view)
+		return nil
+	}
+	return event
+}
 
 func updateChapters() {
 	selected := booklist_view.GetCurrentItem()
@@ -24,10 +38,12 @@ func updateChapters() {
 	for _, chapter := range chapters {
 		chapterlist_view.AddItem(chapter.Name(), "", 0, nil)
 	}
+
+	app.SetFocus(chapterlist_view)
 }
 
 func main() {
-	app := tview.NewApplication()
+	app = tview.NewApplication()
 
 	newPrimitive := func(text string) tview.Primitive {
 		return tview.NewTextView().
@@ -62,6 +78,8 @@ func main() {
 
 	grid.AddItem(booklist_view, 1, 0, 1, 1, 0, 0, true).
 		AddItem(chapterlist_view, 1, 1, 1, 1, 0, 0, false)
+
+	app.SetInputCapture(navigationHandler)
 
 	if err := app.SetRoot(grid, true).SetFocus(grid).Run(); err != nil {
 		panic(err)
