@@ -14,13 +14,13 @@ func main() {
 	}
 	menu := newPrimitive("Menu")
 	list := tview.NewList().
-		AddItem("List item 1", "Some explanatory text", 'a', nil).
-		AddItem("List item 2", "Some explanatory text", 'b', nil).
-		AddItem("List item 3", "Some explanatory text", 'c', nil).
-		AddItem("List item 4", "Some explanatory text", 'd', nil).
-		AddItem("Quit", "Press to exit", 'q', func() {
+		AddItem("List item 1", "", 'a', nil).
+		AddItem("List item 2", "", 'b', nil).
+		AddItem("List item 3", "", 'c', nil).
+		AddItem("List item 4", "", 'd', nil).
+		AddItem("Quit", "", 'q', func() {
 			app.Stop()
-		})
+		}).ShowSecondaryText(false)
 
 	grid := tview.NewGrid().
 		SetRows(3, 0, 3).
