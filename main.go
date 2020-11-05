@@ -2,6 +2,7 @@ package main
 
 import (
 	"io/ioutil"
+	"os/exec"
 	"path"
 
 	"github.com/gdamore/tcell"
@@ -21,8 +22,22 @@ func navigationHandler(event *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyLeft:
 		app.SetFocus(booklist_view)
 		return nil
+	case tcell.KeyEsc:
+		app.Stop()
 	}
 	return event
+}
+
+func playFile() {
+	selected := booklist_view.GetCurrentItem()
+	bookname, _ := booklist_view.GetItemText(selected)
+	selected = chapterlist_view.GetCurrentItem()
+	chaptername, _ := chapterlist_view.GetItemText(selected)
+
+	audiopath := path.Join(booklibrary_path, bookname, chaptername)
+
+	cmd := exec.Command("mpv", audiopath)
+	cmd.Start()
 }
 
 func updateChapters() {
@@ -36,7 +51,7 @@ func updateChapters() {
 		panic(err)
 	}
 	for _, chapter := range chapters {
-		chapterlist_view.AddItem(chapter.Name(), "", 0, nil)
+		chapterlist_view.AddItem(chapter.Name(), "", 0, playFile)
 	}
 
 	app.SetFocus(chapterlist_view)
