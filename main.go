@@ -1,8 +1,7 @@
 package main
 
 import (
-	"os"
-	"path/filepath"
+	"io/ioutil"
 
 	"github.com/rivo/tview"
 )
@@ -21,10 +20,10 @@ func main() {
 	menu := newPrimitive("Menu")
 	list := tview.NewList()
 
-	err := filepath.Walk(book_library, func(path string, info os.FileInfo, err error) error {
-		list.AddItem(path, "", 'a', nil)
-		return nil
-	})
+	books, err := ioutil.ReadDir(book_library)
+	for _, book := range books {
+		list.AddItem(book.Name(), "", 0, nil)
+	}
 	if err != nil {
 		panic(err)
 	}
