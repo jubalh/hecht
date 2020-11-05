@@ -1,8 +1,13 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/rivo/tview"
 )
+
+var book_library string = "./lib"
 
 func main() {
 	app := tview.NewApplication()
@@ -12,15 +17,21 @@ func main() {
 			SetTextAlign(tview.AlignCenter).
 			SetText(text)
 	}
+
 	menu := newPrimitive("Menu")
-	list := tview.NewList().
-		AddItem("List item 1", "", 'a', nil).
-		AddItem("List item 2", "", 'b', nil).
-		AddItem("List item 3", "", 'c', nil).
-		AddItem("List item 4", "", 'd', nil).
-		AddItem("Quit", "", 'q', func() {
-			app.Stop()
-		}).ShowSecondaryText(false)
+	list := tview.NewList()
+
+	err := filepath.Walk(book_library, func(path string, info os.FileInfo, err error) error {
+		list.AddItem(path, "", 'a', nil)
+		return nil
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	list.AddItem("Quit", "", 'q', func() {
+		app.Stop()
+	}).ShowSecondaryText(false)
 
 	grid := tview.NewGrid().
 		SetRows(3, 0, 3).
