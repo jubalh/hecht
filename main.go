@@ -2,11 +2,21 @@ package main
 
 import (
 	"io/ioutil"
+	"strconv"
 
 	"github.com/rivo/tview"
 )
 
 var book_library string = "./lib"
+var book_list *tview.List
+var chapter_list *tview.List
+
+func updateChapters() {
+	sel := book_list.GetCurrentItem()
+	s := strconv.Itoa(sel)
+	chapter_list.Clear()
+	chapter_list.AddItem(s, "", 0, nil)
+}
 
 func main() {
 	app := tview.NewApplication()
@@ -17,20 +27,21 @@ func main() {
 			SetText(text)
 	}
 
-	menu := newPrimitive("Menu")
-	list := tview.NewList()
+	book_list = tview.NewList()
+	chapter_list = tview.NewList()
 
 	books, err := ioutil.ReadDir(book_library)
 	for _, book := range books {
-		list.AddItem(book.Name(), "", 0, nil)
+		book_list.AddItem(book.Name(), "", 0, updateChapters)
 	}
 	if err != nil {
 		panic(err)
 	}
 
-	list.AddItem("Quit", "", 'q', func() {
+	book_list.AddItem("Quit", "", 'q', func() {
 		app.Stop()
 	}).ShowSecondaryText(false)
+	book_list.SetCurrentItem(0)
 
 	grid := tview.NewGrid().
 		SetRows(3, 0, 3).
@@ -39,8 +50,8 @@ func main() {
 		AddItem(newPrimitive("HECHT"), 0, 0, 1, 2, 0, 0, false).
 		AddItem(newPrimitive("Footer"), 2, 0, 1, 2, 0, 0, false)
 
-	grid.AddItem(menu, 1, 0, 1, 1, 0, 0, false).
-		AddItem(list, 1, 1, 1, 1, 0, 0, true)
+	grid.AddItem(book_list, 1, 0, 1, 1, 0, 0, true).
+		AddItem(chapter_list, 1, 1, 1, 1, 0, 0, false)
 
 	if err := app.SetRoot(grid, true).SetFocus(grid).Run(); err != nil {
 		panic(err)
