@@ -2,20 +2,28 @@ package main
 
 import (
 	"io/ioutil"
-	"strconv"
+	"path"
 
 	"github.com/rivo/tview"
 )
 
-var book_library string = "./lib"
-var book_list *tview.List
-var chapter_list *tview.List
+var booklibrary_path string = "./lib"
+var booklist_view *tview.List
+var chapterlist_view *tview.List
 
 func updateChapters() {
-	sel := book_list.GetCurrentItem()
-	s := strconv.Itoa(sel)
-	chapter_list.Clear()
-	chapter_list.AddItem(s, "", 0, nil)
+	selected := booklist_view.GetCurrentItem()
+	text, _ := booklist_view.GetItemText(selected)
+
+	chapterlist_view.Clear()
+
+	chapters, err := ioutil.ReadDir(path.Join(booklibrary_path, text))
+	if err != nil {
+		panic(err)
+	}
+	for _, chapter := range chapters {
+		chapterlist_view.AddItem(chapter.Name(), "", 0, nil)
+	}
 }
 
 func main() {
@@ -27,23 +35,23 @@ func main() {
 			SetText(text)
 	}
 
-	book_list = tview.NewList()
-	chapter_list = tview.NewList()
+	booklist_view = tview.NewList()
+	chapterlist_view = tview.NewList().ShowSecondaryText(false)
 
-	books, err := ioutil.ReadDir(book_library)
+	books, err := ioutil.ReadDir(booklibrary_path)
 	for _, book := range books {
 		if book.IsDir() {
-			book_list.AddItem(book.Name(), "", 0, updateChapters)
+			booklist_view.AddItem(book.Name(), "", 0, updateChapters)
 		}
 	}
 	if err != nil {
 		panic(err)
 	}
 
-	book_list.AddItem("Quit", "", 'q', func() {
+	booklist_view.AddItem("Quit", "", 'q', func() {
 		app.Stop()
 	}).ShowSecondaryText(false)
-	book_list.SetCurrentItem(0)
+	booklist_view.SetCurrentItem(0)
 
 	grid := tview.NewGrid().
 		SetRows(3, 0, 3).
@@ -52,8 +60,8 @@ func main() {
 		AddItem(newPrimitive("HECHT"), 0, 0, 1, 2, 0, 0, false).
 		AddItem(newPrimitive("Footer"), 2, 0, 1, 2, 0, 0, false)
 
-	grid.AddItem(book_list, 1, 0, 1, 1, 0, 0, true).
-		AddItem(chapter_list, 1, 1, 1, 1, 0, 0, false)
+	grid.AddItem(booklist_view, 1, 0, 1, 1, 0, 0, true).
+		AddItem(chapterlist_view, 1, 1, 1, 1, 0, 0, false)
 
 	if err := app.SetRoot(grid, true).SetFocus(grid).Run(); err != nil {
 		panic(err)
