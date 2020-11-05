@@ -13,6 +13,8 @@ var booklibrary_path string = "./lib"
 var booklist_view *tview.List
 var chapterlist_view *tview.List
 var app *tview.Application
+var isPlaying bool = false
+var cmd *exec.Cmd
 
 func navigationHandler(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Key() {
@@ -29,15 +31,21 @@ func navigationHandler(event *tcell.EventKey) *tcell.EventKey {
 }
 
 func playFile() {
-	selected := booklist_view.GetCurrentItem()
-	bookname, _ := booklist_view.GetItemText(selected)
-	selected = chapterlist_view.GetCurrentItem()
-	chaptername, _ := chapterlist_view.GetItemText(selected)
+	if isPlaying {
+		cmd.Process.Kill()
+		isPlaying = false
+	} else {
+		selected := booklist_view.GetCurrentItem()
+		bookname, _ := booklist_view.GetItemText(selected)
+		selected = chapterlist_view.GetCurrentItem()
+		chaptername, _ := chapterlist_view.GetItemText(selected)
 
-	audiopath := path.Join(booklibrary_path, bookname, chaptername)
+		audiopath := path.Join(booklibrary_path, bookname, chaptername)
 
-	cmd := exec.Command("mpv", audiopath)
-	cmd.Start()
+		cmd = exec.Command("mpv", audiopath)
+		cmd.Start()
+		isPlaying = true
+	}
 }
 
 func updateChapters() {
