@@ -32,7 +32,9 @@ func main() {
 
 	books, err := ioutil.ReadDir(book_library)
 	for _, book := range books {
-		book_list.AddItem(book.Name(), "", 0, updateChapters)
+		if book.IsDir() {
+			book_list.AddItem(book.Name(), "", 0, updateChapters)
+		}
 	}
 	if err != nil {
 		panic(err)
