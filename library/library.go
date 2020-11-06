@@ -17,19 +17,23 @@ type AudioBook struct {
 }
 
 /* scanBook scans the (audio) files of a folder (book) and returns the book as a slice of Chapter */
-func scanBook(path string) []Chapter {
+func scanBook(path string) ([]Chapter, int) {
 	var chapters []Chapter
+	bookLength := 0
 
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
 		panic(err)
 	}
+
 	for _, file := range files {
 		chapter := Chapter{Name: file.Name(), Length: 1}
 		chapters = append(chapters, chapter)
+
+		bookLength += chapter.Length
 	}
 
-	return chapters
+	return chapters, bookLength
 }
 
 /* scan scans all the books into the library and returns it as a slice of AudioBook */
@@ -45,7 +49,7 @@ func Scan(libpath string) []AudioBook {
 		if file.IsDir() {
 			book := AudioBook{Name: file.Name()}
 			bookpath := path.Join(libpath, file.Name())
-			book.Chapters = scanBook(bookpath)
+			book.Chapters, book.Length = scanBook(bookpath)
 
 			audiobooks = append(audiobooks, book)
 		}

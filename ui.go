@@ -3,6 +3,7 @@ package main
 import (
 	"os/exec"
 	"path"
+	"strconv"
 
 	"github.com/gdamore/tcell"
 	"github.com/jubalh/hecht/library"
@@ -66,12 +67,12 @@ func buildUI(audiobooks []library.AudioBook) *tview.Application {
 	chapterlist_view = tview.NewList().ShowSecondaryText(false)
 
 	for _, book := range audiobooks {
-		booklist_view.AddItem(book.Name, "", 0, updateChapters)
+		booklist_view.AddItem(book.Name, strconv.Itoa(book.Length)+" minutes", 0, updateChapters)
 	}
 
 	booklist_view.AddItem("Quit", "", 'q', func() {
 		app.Stop()
-	}).ShowSecondaryText(false)
+	}).ShowSecondaryText(true)
 
 	booklist_view.SetCurrentItem(0)
 
