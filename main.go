@@ -9,12 +9,60 @@ import (
 	"github.com/rivo/tview"
 )
 
+type Chapter struct {
+	name   string
+	length int
+}
+
+type AudioBook struct {
+	name     string
+	length   int
+	chapters []Chapter
+}
+
+var audiobooks []AudioBook
 var booklibrary_path string = "./lib"
 var booklist_view *tview.List
 var chapterlist_view *tview.List
 var app *tview.Application
 var isPlaying bool = false
 var cmd *exec.Cmd
+
+func scanBook(path string) []Chapter {
+	var chapters []Chapter
+
+	files, err := ioutil.ReadDir(path)
+	if err != nil {
+		panic(err)
+	}
+	for _, file := range files {
+		chapter := Chapter{name: file.Name(), length: 1}
+		chapters = append(chapters, chapter)
+	}
+
+	return chapters
+}
+
+func scanLibrary(libpath string) []AudioBook {
+	var audiobooks []AudioBook
+
+	folders, err := ioutil.ReadDir(libpath)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range folders {
+		if file.IsDir() {
+			book := AudioBook{name: file.Name()}
+			bookpath := path.Join(libpath, file.Name())
+			book.chapters = scanBook(bookpath)
+
+			audiobooks = append(audiobooks, book)
+		}
+	}
+
+	return audiobooks
+}
 
 func navigationHandler(event *tcell.EventKey) *tcell.EventKey {
 	switch event.Key() {
@@ -50,16 +98,11 @@ func playFile() {
 
 func updateChapters() {
 	selected := booklist_view.GetCurrentItem()
-	text, _ := booklist_view.GetItemText(selected)
 
 	chapterlist_view.Clear()
 
-	chapters, err := ioutil.ReadDir(path.Join(booklibrary_path, text))
-	if err != nil {
-		panic(err)
-	}
-	for _, chapter := range chapters {
-		chapterlist_view.AddItem(chapter.Name(), "", 0, playFile)
+	for _, chapter := range audiobooks[selected].chapters {
+		chapterlist_view.AddItem(chapter.name, "", 0, playFile)
 	}
 
 	app.SetFocus(chapterlist_view)
@@ -68,29 +111,25 @@ func updateChapters() {
 func main() {
 	app = tview.NewApplication()
 
-	newPrimitive := func(text string) tview.Primitive {
-		return tview.NewTextView().
-			SetTextAlign(tview.AlignCenter).
-			SetText(text)
-	}
+	audiobooks = scanLibrary(booklibrary_path)
 
 	booklist_view = tview.NewList()
 	chapterlist_view = tview.NewList().ShowSecondaryText(false)
 
-	books, err := ioutil.ReadDir(booklibrary_path)
-	for _, book := range books {
-		if book.IsDir() {
-			booklist_view.AddItem(book.Name(), "", 0, updateChapters)
-		}
-	}
-	if err != nil {
-		panic(err)
+	for _, book := range audiobooks {
+		booklist_view.AddItem(book.name, "", 0, updateChapters)
 	}
 
 	booklist_view.AddItem("Quit", "", 'q', func() {
 		app.Stop()
 	}).ShowSecondaryText(false)
 	booklist_view.SetCurrentItem(0)
+
+	newPrimitive := func(text string) tview.Primitive {
+		return tview.NewTextView().
+			SetTextAlign(tview.AlignCenter).
+			SetText(text)
+	}
 
 	grid := tview.NewGrid().
 		SetRows(3, 0, 3).
