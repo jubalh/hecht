@@ -1,7 +1,10 @@
 package library
 
 import (
+	"fmt"
 	"io/ioutil"
+	"log"
+	"os/exec"
 	"path"
 )
 
@@ -14,6 +17,16 @@ type AudioBook struct {
 	Name     string
 	Length   int
 	Chapters []Chapter
+}
+
+func getAudioLength(filename string) int {
+	out, err := exec.Command("sox", filename, "-n", "stat").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("The date is %s\n", out)
+	return 1
 }
 
 /* scanBook scans the (audio) files of a folder (book) and returns the book as a slice of Chapter */
