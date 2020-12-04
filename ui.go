@@ -7,7 +7,6 @@ import (
 	"strconv"
 
 	"github.com/gdamore/tcell"
-	"github.com/jubalh/hecht/library"
 	"github.com/rivo/tview"
 )
 
@@ -67,7 +66,7 @@ func navigationHandler(event *tcell.EventKey) *tcell.EventKey {
 	return event
 }
 
-func buildUI(audiobooks []library.AudioBook) *tview.Application {
+func buildUI(audiobooks []AudioBook) *tview.Application {
 	app = tview.NewApplication()
 
 	booklist_view = tview.NewList()
