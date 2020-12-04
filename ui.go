@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os/exec"
 	"path"
 	"strconv"
@@ -18,7 +19,10 @@ var cmd *exec.Cmd
 
 func playFile() {
 	if isPlaying {
-		cmd.Process.Kill()
+		err := cmd.Process.Kill()
+		if err != nil {
+			log.Fatal(err)
+		}
 		isPlaying = false
 	} else {
 		selected := booklist_view.GetCurrentItem()
@@ -29,7 +33,10 @@ func playFile() {
 		audiopath := path.Join(booklibrary_path, bookname, chaptername)
 
 		cmd = exec.Command("mpv", audiopath)
-		cmd.Start()
+		err := cmd.Start()
+		if err != nil {
+			log.Fatal(err)
+		}
 		isPlaying = true
 	}
 }
